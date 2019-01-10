@@ -1,0 +1,6 @@
+{
+  "python.formatting.provider": "autopep8",
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "editor.fontSize": 13
+}
