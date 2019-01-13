@@ -64,13 +64,37 @@ class UnitController extends Controller
     {
         try {
             $filterField = $request->get('filterField');
-            if(empty($filterField)) {
+            $filterKeyword = $request->get('filterKeyword', '');
+            if(empty($filterKeyword)) {
                 $units = Unit::whereRaw('1=1')
                     ->orderBy('created_at', 'DESC')
                     ->get();
             }
+            else if(empty($filterField)) {
+                $units = Unit::where('serial', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('qaqc', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('mainboard', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('mcuboard', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('inputboard1', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('inputboard2', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('inputboard3', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('inputboard4', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('status', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('software_reg_key', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('os', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('active_licenses_count', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('firstname', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('lastname', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('location', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('email', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('phone', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('warranty_type', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('warranty_claims', 'like', '%'.$filterKeyword.'%')
+                    ->orWhere('customer_notes', 'like', '%'.$filterKeyword.'%')
+                    ->orderBy('created_at', 'DESC')
+                    ->get();
+            }
             else {
-                $filterKeyword = $request->get('filterKeyword', '');
                 $units = Unit::where($filterField, 'like', '%'.$filterKeyword.'%')
                     ->orderBy('created_at', 'DESC')
                     ->get();
