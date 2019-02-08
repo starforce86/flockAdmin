@@ -753,7 +753,7 @@ class Units extends Component {
               {value: '1', text: 'Active'},
             ]}
             defaultSelectOption={'0'}
-            value={row.status === 1 ? 'Active' : 'In-Active'}
+            value={row.status == 1 ? 'Active' : 'In-Active'}
             onChange={this.onCellChange.bind(this)}
           />;
         },
@@ -789,7 +789,7 @@ class Units extends Component {
               {value: '2', text: 'WIN'},
             ]}
             defaultSelectOption={''}
-            value={row.os === 1 ? 'OSX' : (row.os === 2 ? 'WIN' : '')}
+            value={row.os == 1 ? 'OSX' : (row.os == 2 ? 'WIN' : '')}
             onChange={this.onCellChange.bind(this)}
           />;
         },
@@ -1256,7 +1256,7 @@ class Units extends Component {
                               style={marginFormItem}
                             >
                               <Select
-                                value={unit.status === 1 ? 'Active' : 'In-Active'}
+                                value={unit.status == 1 ? 'Active' : 'In-Active'}
                                 onChange={this.onSelectChange.bind(this, 'status')}
                                 style={{ ...margin, width: '100%', marginTop: '8px' }}
                               >
@@ -1287,7 +1287,7 @@ class Units extends Component {
                               style={marginFormItem}
                             >
                               <Select
-                                value={unit.os === 1 ? 'OSX' : (unit.os === 2 ? 'WIN' : 'Select')}
+                                value={unit.os == 1 ? 'OSX' : (unit.os == 2 ? 'WIN' : 'Select')}
                                 onChange={this.onSelectChange.bind(this, 'os')}
                                 style={{ ...margin, width: '100%', marginTop: '8px' }}
                               >
