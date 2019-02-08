@@ -12,7 +12,7 @@ const SignInStyleWrapper = styled.div`
   align-items: center;
   position: relative;
   background: url(${bgImage}) no-repeat calc((100% - 500px)/2) center;
-  // background-size: cover;
+  background-size: calc(100% - 700px);
 
   &:before {
     content: "";

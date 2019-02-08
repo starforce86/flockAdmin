@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import moment from 'moment';
+import clone from "clone";
 import Input from '../uielements/input';
+import InputNumber from '../uielements/InputNumber';
 import { Icon } from 'antd';
 import DatePicker from '../uielements/datePicker';
 import Select, {
@@ -9,6 +11,7 @@ import Select, {
 
 export default class extends Component {
   state = {
+    orgValue: this.props.value,
     value: this.props.value,
     editable: false,
     valueChanged: false,
@@ -27,9 +30,12 @@ export default class extends Component {
     const value = event.target.value;
     this.setState({ value, valueChanged: true });
   };
+  handleNumberChange = value => {
+    this.setState({ value, valueChanged: true });
+  };
   check = () => {
-    this.setState({ editable: false });
-    if (this.props.onChange) {
+    this.setState({ editable: false, valueChanged: false });
+    if (this.props.onChange && this.state.orgValue !== this.state.value) {
       this.props.onChange(
         this.props.id,
         this.state.value,
@@ -43,8 +49,9 @@ export default class extends Component {
   };
   render() {
     const { editable, valueChanged } = this.state;
-    const { isDatepicker, isSelect, selectOptions, defaultSelectOption } = this.props;
-    let { value } = this.props;
+    const { isDatepicker, isSelect, selectOptions, defaultSelectOption } = clone(this.props);
+    let { value } = clone(this.props);
+
     if(editable || valueChanged) {
       value = this.state.value;
     } 
@@ -63,15 +70,25 @@ export default class extends Component {
         onChange={this.handleSelectChange}
         style={{ magin: '0 0 8px 8px', width: '100%', marginTop: '8px' }}
       >
-        {selectOptions.map((option, index) => <Option key={index} value={option}>{option}</Option>)}
+        {selectOptions.map((option, index) => <Option key={index} value={option.value}>{option.text}</Option>)}
       </Select>
     }
     else {
-      editComponent = <Input
-        value={value}
-        onChange={this.handleChange}
-        onPressEnter={this.check}
-      />
+      if (this.props.type === 'number') {
+        editComponent = <InputNumber
+          min={0} max={10000000}
+          value={value}
+          onChange={this.handleNumberChange}
+          onPressEnter={this.check}
+        />
+      }
+      else {
+        editComponent = <Input 
+          value={value}
+          onChange={this.handleChange}
+          onPressEnter={this.check}
+        />
+      }
     }
     return (
       <div className="isoEditData">

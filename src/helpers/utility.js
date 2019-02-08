@@ -13,6 +13,20 @@ export function getToken() {
     clearToken();
   }
 }
+export function clearUsername() {
+  localStorage.removeItem('username');
+}
+export function setUsername(username) {
+  localStorage.setItem('username', username);
+}
+export function getUsername() {
+  try {
+    const username = localStorage.getItem('username');
+    return username;
+  } catch (err) {
+    console.log('Set localStorage username failed!')
+  }
+}
 
 export function timeDifference(givenTime) {
   givenTime = new Date(givenTime);

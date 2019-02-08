@@ -1,11 +1,14 @@
+const apiUrl = 'https://www.flockadmin.com/Api/';
+// const apiUrl = 'http://localhost:8092/Api/';
+
 export default {
-  apiUrl: 'http://52.15.174.215/Api/',
+  apiUrl: apiUrl,
 };
 
 const siteConfig = {
   siteName: 'FlockStudio Admin',
   siteIcon: 'ion-flash',
-  footerText: 'FlockAdmin ©2018',
+  footerText: 'FlockAdmin ©2019',
 };
 const themeConfig = {
   topbar: 'themedefault',
@@ -16,7 +19,7 @@ const themeConfig = {
 const language = 'english';
 
 const jwtConfig = {
-  fetchUrl: 'http://52.15.174.215/Api/',
+  fetchUrl: apiUrl,
   secretKey: 'secretKey',
 };
 

@@ -1,6 +1,5 @@
 import notification from '../../components/notification';
-
-const endpoint = 'http://52.15.174.215/Api';
+import settings from '../../settings/index';
 
 const requestBlocking = () => ({
   type: unitActions.REQUEST_BLOCKING
@@ -23,7 +22,7 @@ const receiveUnits = (json) => {
 
 const fetchUnits = (filterField, filterKeyword) => dispatch => {
   dispatch(requestUnits());
-  return fetch(`${endpoint}/unit/ajaxList`, {
+  return fetch(`${settings.apiUrl}unit/ajaxList`, {
     method: 'post',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -39,7 +38,7 @@ const fetchUnits = (filterField, filterKeyword) => dispatch => {
 
 const insertUnit = (unit, showSuccessMsg=true) => dispatch => {
   dispatch(requestBlocking());
-  return fetch(`${endpoint}/unit/ajaxAdd`, {
+  return fetch(`${settings.apiUrl}unit/ajaxAdd`, {
     method: 'post',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(unit)
@@ -68,9 +67,28 @@ const insertUnit = (unit, showSuccessMsg=true) => dispatch => {
     })
 }
 
+const sendMessage = (message) => dispatch => {
+  dispatch(requestBlocking());
+  return fetch(`${settings.apiUrl}message/ajaxAdd`, {
+    method: 'post',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({'message': message})
+  })
+    .then(response => response.json())
+    .then(json => {
+      if (json.success === 1) {
+        notification('success', 'Success.');
+      }
+      else {
+        notification('error', json.errMsg);
+      }
+      return dispatch(releaseBlocking());
+    })
+}
+
 const pushSoftwareUpdateNotification = () => dispatch => {
   dispatch(requestBlocking());
-  return fetch(`${endpoint}/unit/ajaxPushSoftwareUpdateNotification`, {
+  return fetch(`${settings.apiUrl}unit/ajaxPushSoftwareUpdateNotification`, {
     method: 'post',
     headers: { 'Content-Type': 'application/json' },
   })
@@ -88,7 +106,7 @@ const pushSoftwareUpdateNotification = () => dispatch => {
 
 const pushFirmwareUpdateNotification = () => dispatch => {
   dispatch(requestBlocking());
-  return fetch(`${endpoint}/unit/ajaxPushFirmwareUpdateNotification`, {
+  return fetch(`${settings.apiUrl}unit/ajaxPushFirmwareUpdateNotification`, {
     method: 'post',
     headers: { 'Content-Type': 'application/json' },
   })
@@ -152,6 +170,9 @@ const unitActions = {
   TOGGLE_UPLOAD_FIRMWARE_MODAL: 'TOGGLE_UPLOAD_FIRMWARE_MODAL',
   TOGGLE_EDITUNIT_MODAL: 'TOGGLE_EDITUNIT_MODAL',
   TOGGLE_EDITNOTE_MODAL: 'TOGGLE_EDITNOTE_MODAL',
+  TOGGLE_MESSAGE_ALL_USERS_MODAL: 'TOGGLE_MESSAGE_ALL_USERS_MODAL',
+  UPDATE_MESSAGE_ALL_USERS: 'UPDATE_MESSAGE_ALL_USERS',
+  SEND_MESSAGE_ALL_USERS: 'SEND_MESSAGE_ALL_USERS',
   TOGGLE_RELOCATE_USER_ACCOUNT_MODAL: 'TOGGLE_RELOCATE_USER_ACCOUNT_MODAL',
   PUSH_UPDATE_NOTIFICATION: 'PUSH_UPDATE_NOTIFICATION',
   SET_FILTER_FIELD: 'SET_FILTER_FIELD',
@@ -186,6 +207,24 @@ const unitActions = {
     return dispatch({
       type: unitActions.TOGGLE_RELOCATE_USER_ACCOUNT_MODAL,
     });
+  },
+  toggleMessageAllUsersModal: () => (dispatch) => {
+    return dispatch({
+      type: unitActions.TOGGLE_MESSAGE_ALL_USERS_MODAL,
+    });
+  },
+  updateMessageAllUser: (data) => (dispatch) => {
+    return dispatch({
+      type: unitActions.UPDATE_MESSAGE_ALL_USERS,
+      payload: {data}
+    });
+  },
+  sendMessageAllUser: () => (dispatch, getState) => {
+    const curState = getState();
+    if(!curState.Units.messageAllUser) {
+      return null;
+    }
+    return dispatch(sendMessage(curState.Units.messageAllUser));
   },
   toggleEditUnitModal: (data) => (dispatch, getState) => {
     if(!data) {

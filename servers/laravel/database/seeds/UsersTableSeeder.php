@@ -30,10 +30,10 @@ class UsersTableSeeder extends Seeder
             'username' => 'jamal'
         ]);
         DB::table('users')->insert([
-            'name' => 'starforce',
-            'email' => 'starforce@gmail.com',
-            'password' => bcrypt('123456'),
-            'username' => 'starforce'
+            'name' => 'flockaudio',
+            'email' => 'flockaudio@gmail.com',
+            'password' => bcrypt('Flockgroupsupport9977#'),
+            'username' => 'flockaudio'
         ]);
     }
 }

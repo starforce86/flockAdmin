@@ -21,7 +21,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login']]);
+        $this->middleware('auth:api', ['except' => ['login', 'changePassword']]);
     }
     /**
      * Create a User
@@ -98,6 +98,28 @@ class AuthController extends Controller
         $this->guard()->logout();
 
         return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $username = $request->get('username');
+        $old_password = $request->get('oldPassword');
+        $new_password = $request->get('newPassword');
+
+        $user = User::where('username', $username)->first();
+
+        if(empty($user)) {
+            return response()->json(['success' => 0, 'errMsg'=> 'Username invalid!']);
+        }
+
+        if(!Hash::check($old_password, $user->password)) {
+            return response()->json(['success' => 0, 'errMsg'=> 'Old password invalid!']);
+        }
+
+        $user->password = Hash::make($new_password);
+        $user->save();
+
+        return response()->json(['success' => 1]);
     }
 
     /**

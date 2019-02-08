@@ -8,7 +8,27 @@ class AuthHelper {
     }
     return await SuperFetch.post('login', userInfo).then(response => {
       const checkResult = this.checkExpirity(response.token);
-      return {...checkResult, last_accessed: response.last_accessed};
+      return {...checkResult, username: userInfo.username, last_accessed: response.last_accessed};
+    });
+  };
+  changePassword = async ({ token, username, oldPassword, newPassword, confirmNewPassword }) => {
+    if (!username) {
+      return { success: 0, errMsg: 'Username is empty!' };
+    }
+    if (!oldPassword) {
+      return { success: 0, errMsg: 'Please fill in the old password!' };
+    }
+    if (!newPassword) {
+      return { success: 0, errMsg: 'Please fill in the new password!' };
+    }
+    if (!confirmNewPassword) {
+      return { success: 0, errMsg: 'Please fill in the confirm new password!' };
+    }
+    if (newPassword !== confirmNewPassword) {
+      return { success: 0, errMsg: 'Password does not match!' };
+    }
+    return await SuperFetch.post('changePassword', {token, username, oldPassword, newPassword}).then(response => {
+      return response;
     });
   };
   async checkDemoPage(token) {

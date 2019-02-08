@@ -6,7 +6,7 @@ import userpic from '../../image/avatar.jpg';
 import authAction from '../../redux/auth/actions';
 import TopbarDropdownWrapper from './topbarDropdown.style';
 
-const { logout } = authAction;
+const { logout, toggleChangePasswordModal } = authAction;
 
 class TopbarUser extends Component {
   constructor(props) {
@@ -23,14 +23,22 @@ class TopbarUser extends Component {
   handleVisibleChange() {
     this.setState({ visible: !this.state.visible });
   }
+  handleLogout = () => {
+    const { dispatch, logout } = this.props;
+    dispatch(logout());
+  }
+  handleChangePasswordModal = () => {
+    const { dispatch, toggleChangePasswordModal } = this.props;
+    dispatch(toggleChangePasswordModal());
+  }
 
   render() {
     const content = (
       <TopbarDropdownWrapper className="isoUserDropdown">
-        <a className="isoDropdownLink" href="# ">
-          <IntlMessages id="topbar.help" />
+        <a className="isoDropdownLink" onClick={this.handleChangePasswordModal.bind(this)} href="# ">
+          <IntlMessages id="topbar.changePassword" />
         </a>
-        <a className="isoDropdownLink" onClick={this.props.logout} href="# ">
+        <a className="isoDropdownLink" onClick={this.handleLogout.bind(this)} href="# ">
           <IntlMessages id="topbar.logout" />
         </a>
       </TopbarDropdownWrapper>
@@ -55,5 +63,11 @@ class TopbarUser extends Component {
 }
 export default connect(
   null,
-  { logout }
+  (dispatch) => {
+    return {
+      dispatch,
+      logout,
+      toggleChangePasswordModal
+    }
+  }
 )(TopbarUser);

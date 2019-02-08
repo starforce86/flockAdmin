@@ -25,9 +25,9 @@ class CreateUnitsTable extends Migration
             $table->string('inputboard3')->default('')->nullable();
             $table->string('inputboard4')->default('')->nullable();
             $table->string('software_reg_key')->default('')->nullable();
-            $table->string('status')->default('')->nullable();
+            $table->integer('status')->default(0);
             $table->timestamp('active_date')->nullable();
-            $table->string('os')->default('')->nullable();
+            $table->integer('os')->nullable();
             $table->integer('active_licenses_count')->default(0)->nullable();
             $table->string('firstname')->default('')->nullable();
             $table->string('lastname')->default('')->nullable();

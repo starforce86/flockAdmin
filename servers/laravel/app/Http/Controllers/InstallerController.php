@@ -15,11 +15,11 @@ class InstallerController extends Controller
         try {
             if($request->get("os") == "win") {
                 $installerFileName = "PATCH APP.zip";
-                $installerPath = url("/api/installer/getInstaller", ["os" => "win"]);
+                $installerPath = url("/Api/installer/getInstaller", ["os" => "win"]);
             }
             else if($request->get("os") == "mac") {
                 $installerFileName = "PATCH APP.dmg";
-                $installerPath = url("/api/installer/getInstaller", ["os" => "mac"]);
+                $installerPath = url("/Api/installer/getInstaller", ["os" => "mac"]);
             }
             else {
                 return response()->json(["success" => 0, "errMsg" => "OS(win or mac) required!"]);
@@ -40,11 +40,11 @@ class InstallerController extends Controller
         try {
             if($os == "win") {
                 $installerFileName = "PATCH APP.zip";
-                $installerPath = url("/api/installer/getInstaller", ["os" => "win"]);
+                $installerPath = url("/Api/installer/getInstaller", ["os" => "win"]);
             }
             else if($os == "mac") {
                 $installerFileName = "PATCH APP.dmg";
-                $installerPath = url("/api/installer/getInstaller", ["os" => "mac"]);
+                $installerPath = url("/Api/installer/getInstaller", ["os" => "mac"]);
             }
             else {
                 return response()->json(["success" => 0, "errMsg" => "OS(win or mac) required!"]);
@@ -69,6 +69,22 @@ class InstallerController extends Controller
                 ->where([
                     ['key', '=', 'LAST_PUSHED_SOFTWARE_VERSION'],
                     ['param1', '=', $os],
+                ])
+                ->value('value');
+
+            return response()->json(["success" => 1, "version" => $version]);
+        }
+        catch (\Exception $e) {
+            return response()->json(['success' => 0, 'errMsg' => $e->getMessage()]);
+        }
+    }
+
+    public function getLastFirmwareVersion(Request $request) {
+
+        try {
+            $version = DB::table('settings')
+                ->where([
+                    ['key', '=', 'LAST_PUSHED_FIRMWARE_VERSION'],
                 ])
                 ->value('value');
 

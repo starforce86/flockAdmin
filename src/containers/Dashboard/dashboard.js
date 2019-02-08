@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
-import { Row, Col } from "antd";
+import { Row, Col, InputNumber } from "antd";
 import clone from "clone";
+import settings from "../../settings/index";
 import Box from "../../components/utility/box";
 import LayoutWrapper from "../../components/utility/layoutWrapper";
 import basicStyle from "../../settings/basicStyle";
 import unitActions from "../../redux/unit/actions";
+import authActions from "../../redux/auth/actions";
 import { rtl } from '../../settings/withDirection';
 import Input, { Textarea } from '../../components/uielements/input';
 import Button from "../../components/uielements/button";
@@ -40,8 +42,6 @@ import AutoComplete, {
 const FormItem = Form.Item;
 const confirm = Modal.confirm;
 
-const endpoint = 'http://52.15.174.215/Api';
-
 const { 
   addUnit, 
   updateUnit, 
@@ -53,8 +53,13 @@ const {
   toggleUploadFirmwareModal, 
   toggleEditUnitModal, 
   toggleEditNoteModal,
-  toggleRelocateUserAccountModal
+  toggleRelocateUserAccountModal,
+  toggleMessageAllUsersModal,
+  updateMessageAllUser,
+  sendMessageAllUser
 } = unitActions;
+
+const { toggleChangePasswordModal, changePassword } = authActions;
 
 class Units extends Component {
   static propTypes = {
@@ -82,6 +87,7 @@ class Units extends Component {
     this.uploadFirmwareFileInput = React.createRef();
     this.onDateChange = this.onDateChange.bind(this);
     this.onRecordChange = this.onRecordChange.bind(this);
+    this.onCellChange = this.onCellChange.bind(this);
   }
   componentDidMount() {
     const { dispatch } = this.props;
@@ -89,6 +95,17 @@ class Units extends Component {
   }
   generateSoftwareRegKey = () => {
     return Math.random().toString().substring(2,12);
+  }
+  handleChangePasswordModal = () => {
+    const { dispatch, toggleChangePasswordModal } = this.props;
+    dispatch(toggleChangePasswordModal());
+  }
+  handleChangePassword = () => {
+    const { dispatch, changePassword } = this.props;
+    const oldPassword = document.getElementById('inputOldPassword').value || '';
+    const newPassword = document.getElementById('inputNewPassword').value || '';
+    const confirmNewPassword = document.getElementById('inputConfirmNewPassword').value || '';
+    dispatch(changePassword({oldPassword, newPassword, confirmNewPassword}));
   }
   handleAutoCompleteChange = (value) => {
     let { units } = clone(this.props);
@@ -108,6 +125,7 @@ class Units extends Component {
     dispatch(toggleEditNoteModal(unit));
   }
   handleEditRecord(unit) {
+    console.log(unit);
     if (!unit.serial) {
       notification('error', 'Unit Serial # is empty!');
       return;
@@ -123,6 +141,9 @@ class Units extends Component {
     if (!unit.software_reg_key) {
       notification('error', 'Software Registration Key is empty!');
       return;
+    }
+    if (unit.status === '') {
+      unit.status = 0;
     }
     const { dispatch, addUnit, toggleEditUnitModal } = this.props;
     dispatch(addUnit(unit));
@@ -163,6 +184,24 @@ class Units extends Component {
       centered: true
     });
   }
+  handleMessageAllUsersModal = () => {
+    const { dispatch, toggleMessageAllUsersModal } = this.props;
+    dispatch(updateMessageAllUser(''));
+    dispatch(toggleMessageAllUsersModal());
+  }
+  handleMessageAllUsers() {
+    const { messageAllUser, dispatch, sendMessageAllUser, toggleMessageAllUsersModal } = this.props;
+    if(!messageAllUser) {
+      notification('error', 'Input message!');
+      return;
+    }    
+    dispatch(sendMessageAllUser());
+    dispatch(toggleMessageAllUsersModal());
+  }
+  onMessageAllUsersChange = (event) => {
+    let { dispatch, updateMessageAllUser } = this.props;
+    dispatch(updateMessageAllUser(event.target.value));
+  };
   handleMarkForRepair() {
     if(!this.state.selectedRow) {
       notification('error', 'Select a row!');
@@ -336,16 +375,32 @@ class Units extends Component {
     let { units } = clone(this.props);
     let srcUnit = units.find(unit => unit.id === this.state.selectedRow.id);
     let destUnit = units.find(unit => unit.serial === this.state.serialToRelocate);
+    if(!destUnit) {
+      notification('error', 'Destination Serial# is invalid!');
+      return;
+    }
+    destUnit['active_date'] = srcUnit.active_date;
+    destUnit['os'] = srcUnit.os;
+    destUnit['active_licenses_count'] = srcUnit.active_licenses_count;
     destUnit['firstname'] = srcUnit.firstname;
     destUnit['lastname'] = srcUnit.lastname;
     destUnit['location'] = srcUnit.location;
     destUnit['email'] = srcUnit.email;
     destUnit['phone'] = srcUnit.phone;
+    destUnit['warranty_type'] = srcUnit.warranty_type;
+    destUnit['warranty_claims'] = srcUnit.warranty_claims;
+    destUnit['warranty_active_date'] = srcUnit.warranty_active_date;
+    srcUnit['active_date'] = '';
+    srcUnit['os'] = '';
+    srcUnit['active_licenses_count'] = '';
     srcUnit['firstname'] = '';
     srcUnit['lastname'] = '';
     srcUnit['location'] = '';
     srcUnit['email'] = '';
     srcUnit['phone'] = '';
+    srcUnit['warranty_type'] = '';
+    srcUnit['warranty_claims'] = '';
+    srcUnit['warranty_active_date'] = '';
     dispatch(toggleRelocateUserAccountModal());
     dispatch(addUnit(destUnit));
     dispatch(addUnit(srcUnit, false));
@@ -390,7 +445,7 @@ class Units extends Component {
     let { units } = clone(this.props);
     let filteredUnits = units.filter(unit => unit.id === id);
     if (filteredUnits.length > 0) {
-      let unit = units[0];
+      let unit = filteredUnits[0];
       if(columnsKey === 'assembly_date' || columnsKey === 'active_date' || columnsKey === 'warranty_active_date') {
         if(value) {
           value = moment(value, 'MM/DD/YYYY').format('YYYY-MM-DD');
@@ -443,7 +498,7 @@ class Units extends Component {
     data.append('version', this.state.selectedSoftwareVersion);
 
     axios
-      .post(`${endpoint}/upload/software`, data, {
+      .post(`${settings.apiUrl}upload/software`, data, {
         onUploadProgress: ProgressEvent => {
           this.setState({
             softwareFileLoaded: (ProgressEvent.loaded / ProgressEvent.total * 100),
@@ -471,7 +526,7 @@ class Units extends Component {
     data.append('version', this.state.selectedFirmwareVersion);
 
     axios
-      .post(`${endpoint}/upload/firmware`, data, {
+      .post(`${settings.apiUrl}upload/firmware`, data, {
         onUploadProgress: ProgressEvent => {
           this.setState({
             firmwareFileLoaded: (ProgressEvent.loaded / ProgressEvent.total * 100),
@@ -537,8 +592,9 @@ class Units extends Component {
     };
 
     const { rowStyle, colStyle, gutter } = basicStyle;
-    const { editUnitModalActive, editNoteModalActive, uploadSoftwareModalActive, uploadFirmwareModalActive, relocateUserAccountModalActive } = this.props;
-    const { units, unit } = clone(this.props);
+    const { editUnitModalActive, messageAllUserModalActive, editNoteModalActive, uploadSoftwareModalActive, uploadFirmwareModalActive, relocateUserAccountModalActive, changePasswordModalActive } = this.props;
+    const { units, unit, messageAllUser } = clone(this.props);
+
     const dataSource = units;
     const columns = [
       {
@@ -692,9 +748,12 @@ class Units extends Component {
             id={row.id}
             columnsKey={'status'}
             isSelect={true}
-            selectOptions={['Active', 'In-Active']}
-            defaultSelectOption={'In-Active'}
-            value={row.status}
+            selectOptions={[
+              {value: '0', text: 'In-Active'},
+              {value: '1', text: 'Active'},
+            ]}
+            defaultSelectOption={'0'}
+            value={row.status === 1 ? 'Active' : 'In-Active'}
             onChange={this.onCellChange.bind(this)}
           />;
         },
@@ -724,9 +783,13 @@ class Units extends Component {
             id={row.id}
             columnsKey={'os'}
             isSelect={true}
-            selectOptions={['OSX', 'WIN']}
-            defaultSelectOption={'OSX'}
-            value={row.os}
+            selectOptions={[
+              {value: '', text: 'Select'},
+              {value: '1', text: 'OSX'},
+              {value: '2', text: 'WIN'},
+            ]}
+            defaultSelectOption={''}
+            value={row.os === 1 ? 'OSX' : (row.os === 2 ? 'WIN' : '')}
             onChange={this.onCellChange.bind(this)}
           />;
         },
@@ -742,6 +805,7 @@ class Units extends Component {
             columnsKey={'active_licenses_count'}
             value={row.active_licenses_count}
             onChange={this.onCellChange.bind(this)}
+            type={'number'}
           />;
         },
       },
@@ -826,8 +890,11 @@ class Units extends Component {
             columnsKey={'warranty_type'}
             value={row.warranty_type}
             isSelect={true}
-            selectOptions={['Standard']}
-            defaultSelectOption={'Standard'}
+            selectOptions={[
+              {value: '', text: 'Select'},
+              {value: 'Standard', text: 'Standard'},
+            ]}
+            defaultSelectOption={''}
             onChange={this.onCellChange.bind(this)}
           />;
         },
@@ -943,11 +1010,9 @@ class Units extends Component {
                     <FlockButton type="primary" style={FlockButtonStyle2} onClick={this.handleUploadSoftwareModal}>
                       Upload New Software
                     </FlockButton>
-                    {/* <FlockButton type="primary" style={FlockButtonStyle2} onClick={this.handleEditUnitModal.bind(this, null)}>
+                    <FlockButton type="primary" style={FlockButtonStyle2} onClick={this.handleEditUnitModal.bind(this, null)}>
                       Add New Unit
-                    </FlockButton> */}
-                    <PseudoFlockButton type="primary" style={FlockButtonStyle2} onClick={(e) => { e.preventDefault(); }}>
-                    </PseudoFlockButton>
+                    </FlockButton>
                     <FlockButton type="primary" style={FlockButtonStyle2} onClick={this.handleClearUserInformation.bind(this)}>
                       Clear User Information
                     </FlockButton>
@@ -967,26 +1032,20 @@ class Units extends Component {
                       Decomission System
                     <span style={{ marginLeft: '3px', width: '12px', height: '12px', backgroundColor: 'red', borderRadius: '6px', border: 'solid 1px white' }}></span>
                     </FlockButton>
-                    {/* <FlockButton type="primary" style={FlockButtonStyle2}>
+                    <FlockButton type="primary" style={FlockButtonStyle2} onClick={this.handleMessageAllUsersModal.bind(this)}>
                       Message All Users
-                    </FlockButton> */}
-                    <FlockButton type="primary" style={FlockButtonStyle2} onClick={this.handleEditUnitModal.bind(this, null)}>
-                      Add New Unit
                     </FlockButton>
                   </div>
-                  <div style={{ position: 'absolute', top: '80px', right: '320px', width: '200px' }}>
+
+                  <div style={{ position: 'absolute', top: '0px', right: '0', width: '300px' }}>
                     <FlockSelect defaultValue="PATCH Systems" style={{ width: '100%' }}>
                       <FlockSelectOption value="PATCH Systems">PATCH Systems</FlockSelectOption>
                     </FlockSelect>
-                  </div>
-                  <div style={{ position: 'absolute', top: '36px', right: '0', width: '300px' }}>
-                    <FlockInputSearch placeholder="Search" style={margin} onSearch={this.onFilterKeywordChange.bind(this)} />
-
+                    <FlockInputSearch placeholder="Search" style={{...margin, marginTop: '8px'}} onSearch={this.onFilterKeywordChange.bind(this)} />
                     <FlockSelect
                       defaultValue="Filter All Results"
                       style={{ width: '100%' }}
                       onChange={this.onFilterFieldSelectChange.bind(this)}>
-
                       <FlockSelectOption value="">All Results</FlockSelectOption>
                       <FlockSelectOption value="serial">Unit Serial #</FlockSelectOption>
                       {/* <FlockSelectOption value="assembly_date">Date of Assembly</FlockSelectOption> */}
@@ -1197,12 +1256,12 @@ class Units extends Component {
                               style={marginFormItem}
                             >
                               <Select
-                                defaultValue={unit.status ? unit.status : 'In-Active'}
+                                value={unit.status === 1 ? 'Active' : 'In-Active'}
                                 onChange={this.onSelectChange.bind(this, 'status')}
                                 style={{ ...margin, width: '100%', marginTop: '8px' }}
                               >
-                                <Option value="Active">Active</Option>
-                                <Option value="In-Active">In-Active</Option>
+                                <Option value="0">In-Active</Option>
+                                <Option value="1">Active</Option>
                               </Select>
                             </FormItem>
                           </Col>
@@ -1228,12 +1287,13 @@ class Units extends Component {
                               style={marginFormItem}
                             >
                               <Select
-                                defaultValue={unit.os ? unit.os : 'OSX'}
+                                value={unit.os === 1 ? 'OSX' : (unit.os === 2 ? 'WIN' : 'Select')}
                                 onChange={this.onSelectChange.bind(this, 'os')}
                                 style={{ ...margin, width: '100%', marginTop: '8px' }}
                               >
-                                <Option value="OSX">OSX</Option>
-                                <Option value="WIN">WIN</Option>
+                                <Option value="">Select</Option>
+                                <Option value="1">OSX</Option>
+                                <Option value="2">WIN</Option>
                               </Select>
                             </FormItem>
                             <FormItem
@@ -1348,7 +1408,7 @@ class Units extends Component {
 
                     <Modal
                       visible={editNoteModalActive}
-                      title={'Serial #:'}
+                      title={'Serial #:' + unit.serial}
                       okText={'Save'}
                       onCancel={this.handleEditNoteModal.bind(this, null)}
                       onOk={this.handleEditNote.bind(this, unit)}
@@ -1364,6 +1424,23 @@ class Units extends Component {
                     </Modal>
 
                     <Modal
+                      visible={messageAllUserModalActive}
+                      title={'Message All Users'}
+                      okText={'Save'}
+                      onCancel={this.handleMessageAllUsersModal.bind(this)}
+                      onOk={this.handleMessageAllUsers.bind(this)}
+                      width={1000}>
+
+                      <Textarea
+                        placeholder=""
+                        value={messageAllUser}
+                        rows={20}
+                        onChange={this.onMessageAllUsersChange.bind(this)}
+                        className="BillFormAddress"
+                      />
+                    </Modal>
+
+                    <Modal
                       visible={uploadSoftwareModalActive}
                       title={'Upload Software'}
                       okText={'Upload'}
@@ -1371,12 +1448,12 @@ class Units extends Component {
                       onCancel={this.handleUploadSoftwareModal}
                       onOk={this.handleSoftwareUpload}
                     >
-                      <Input
-                        placeholder="Enter Software Version Number"
+                      <span>New Software Version Number : </span>
+                      <InputNumber
                         value={this.state.selectedSoftwareVersion}
-                        type={'number'}
-                        onChange={(e) => {
-                          this.setState({ selectedSoftwareVersion: e.target.value });
+                        min={0} max={1000} step={0.1}
+                        onChange={(value) => {
+                          this.setState({ selectedSoftwareVersion: value });
                         }}
                         style={margin}
                       />
@@ -1392,12 +1469,12 @@ class Units extends Component {
                       onCancel={this.handleUploadFirmwareModal}
                       onOk={this.handleFirmwareUpload}
                     >
-                      <Input
-                        placeholder="Enter Firmware Version Number"
+                      <span>New Firmware Version Number : </span>
+                      <InputNumber
                         value={this.state.selectedFirmwareVersion}
-                        type={'number'}
-                        onChange={(e) => {
-                          this.setState({ selectedFirmwareVersion: e.target.value });
+                        min={0} max={1000} step={0.1}
+                        onChange={(value) => {
+                          this.setState({ selectedFirmwareVersion: value });
                         }}
                         style={margin}
                       />
@@ -1441,6 +1518,56 @@ class Units extends Component {
                         </AutoComplete>
                       </div>                      
                     </Modal>
+
+                    <Modal
+                      visible={changePasswordModalActive}
+                      title={'Change Password'}
+                      okText={'Update'}
+                      onCancel={this.handleChangePasswordModal.bind(this)}
+                      onOk={this.handleChangePassword.bind(this)}>
+                      <Form>
+                        <Row>
+                          <Col md={24} sm={24} xs={24}>
+                            <FormItem
+                              {...formItemLayout}
+                              label={"Old Password"}
+                              style={marginFormItem}
+                            >
+                              <Input
+                                id="inputOldPassword"
+                                type="password"
+                                placeholder="Input old password"
+                                defaultValue=""
+                              />
+                            </FormItem>
+                            <FormItem
+                              {...formItemLayout}
+                              label={"New Password"}
+                              style={marginFormItem}
+                            >
+                              <Input
+                                id="inputNewPassword"
+                                type="password"
+                                placeholder="Input new password"
+                                defaultValue=""
+                              />
+                            </FormItem>
+                            <FormItem
+                              {...formItemLayout}
+                              label={"Confirm New Password"}
+                              style={marginFormItem}
+                            >
+                              <Input
+                                id="inputConfirmNewPassword"
+                                type="password"
+                                placeholder="Input new password again"
+                                defaultValue=""
+                              />
+                            </FormItem>
+                          </Col>
+                        </Row>
+                      </Form>  
+                    </Modal>
                   </Col>
                 </Row>
               </Box>
@@ -1454,7 +1581,8 @@ class Units extends Component {
 
 const mapStateToProps = state => {
   return {
-    ...state.Units
+    ...state.Units,
+    ...state.Auth
   };
 }
 
@@ -1468,7 +1596,12 @@ const mapDispatchToProps = dispatch => {
     toggleUploadFirmwareModal,
     toggleEditUnitModal,
     toggleEditNoteModal,
-    toggleRelocateUserAccountModal
+    toggleRelocateUserAccountModal,
+    toggleMessageAllUsersModal,
+    updateMessageAllUser,
+    sendMessageAllUser,
+    toggleChangePasswordModal,
+    changePassword
   }
 }
 

@@ -35,4 +35,8 @@ return [
         'secret' => env('STRIPE_SECRET'),
     ],
 
+    'unit' => [
+        'reg_key_max_count' => 2,
+    ]
+
 ];

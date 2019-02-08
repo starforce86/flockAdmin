@@ -67,7 +67,7 @@ class UnitController extends Controller
             $filterKeyword = $request->get('filterKeyword', '');
             if(empty($filterKeyword)) {
                 $units = Unit::whereRaw('1=1')
-                    ->orderBy('created_at', 'DESC')
+                    ->orderBy('id', 'ASC')
                     ->get();
             }
             else if(empty($filterField)) {
@@ -91,12 +91,12 @@ class UnitController extends Controller
                     ->orWhere('warranty_type', 'like', '%'.$filterKeyword.'%')
                     ->orWhere('warranty_claims', 'like', '%'.$filterKeyword.'%')
                     ->orWhere('customer_notes', 'like', '%'.$filterKeyword.'%')
-                    ->orderBy('created_at', 'DESC')
+                    ->orderBy('id', 'ASC')
                     ->get();
             }
             else {
                 $units = Unit::where($filterField, 'like', '%'.$filterKeyword.'%')
-                    ->orderBy('created_at', 'DESC')
+                    ->orderBy('id', 'ASC')
                     ->get();
             }
 
@@ -153,9 +153,138 @@ class UnitController extends Controller
 
             $unit->save();
 
-            $units = Unit::whereRaw('1=1')->orderBy('created_at', 'DESC')->get();
+            $units = Unit::whereRaw('1=1')->orderBy('id', 'ASC')->get();
 
             return response()->json(['success' => 1, 'data'=> $units]);
+        }
+        catch (\Exception $e) {
+            return response()->json(['success' => 0, 'errMsg'=> $e->getMessage()]);
+        }
+    }
+
+    public function signUpUser(Request $request)
+    {
+        try {
+            $serial = $request->get('serial');
+
+            if(empty($serial)) {
+                return response()->json(['success' => 0, 'errMsg'=> 'Unit Serial # is empty!']);
+            }
+
+            $unit = Unit::where('serial', $serial)
+                ->first();
+
+            if(empty($unit)) {
+                return response()->json(['success' => 0, 'errMsg'=> 'Unit Serial # not matching!']);
+            }
+
+            $unit->firstname = $request->get('firstname');
+            $unit->lastname = $request->get('lastname');
+            $unit->location = $request->get('location');
+            $unit->email = $request->get('email');
+            $unit->phone = $request->get('phone');
+            $unit->active_date = date('Y-m-d H:i:s');
+
+            $unit->save();
+
+            return response()->json(['success' => 1]);
+        }
+        catch (\Exception $e) {
+            return response()->json(['success' => 0, 'errMsg'=> $e->getMessage()]);
+        }
+    }
+
+    public function registerNewDevice(Request $request)
+    {
+        try {
+            $serial = $request->get('serial');
+
+            if(empty($serial)) {
+                return response()->json(['success' => 0, 'errMsg'=> 'Unit Serial # is empty!']);
+            }
+
+            $unit = Unit::where('serial', $serial)
+                ->first();
+
+            if(empty($unit)) {
+                return response()->json(['success' => 0, 'errMsg'=> 'Unit Serial # not matching!']);
+            }
+
+            $unit->firstname = $request->get('firstname');
+            $unit->lastname = $request->get('lastname');
+            $unit->location = $request->get('location');
+            $unit->email = $request->get('email');
+            $unit->phone = $request->get('phone');
+            $unit->os = $request->get('os');
+            $unit->status = 1;
+            $unit->active_date = $request->get('activeDate');
+            $unit->warranty_active_date = date('Y-m-d H:i:s');
+
+            $unit->save();
+
+            return response()->json(['success' => 1]);
+        }
+        catch (\Exception $e) {
+            return response()->json(['success' => 0, 'errMsg'=> $e->getMessage()]);
+        }
+    }
+
+    public function checkRegKey(Request $request) {
+        try {
+            $key = $request->get('regKey');
+
+            if(empty($key)) {
+                return response()->json(['success' => 0, 'errMsg'=> 'Software Registration Key is empty!']);
+            }
+
+            $units = Unit::where('software_reg_key', $key)
+                ->get();
+
+            if(count($units) > 1) {
+                return response()->json(['success' => 0, 'errMsg'=> 'Software Registration Key duplicate!']);
+            }
+
+            if(count($units) == 0) {
+                return response()->json(['success' => 0, 'errMsg'=> 'Software Registration Key invalid!']);
+            }
+
+            return response()->json(['success' => 1]);
+        }
+        catch (\Exception $e) {
+            return response()->json(['success' => 0, 'errMsg'=> $e->getMessage()]);
+        }
+    }
+
+    public function useRegKey(Request $request) {
+        try {
+            $key = $request->get('regKey');
+
+            if(empty($key)) {
+                return response()->json(['success' => 0, 'errMsg'=> 'Software Registration Key is empty!']);
+            }
+
+            $units = Unit::where('software_reg_key', $key)
+                ->get();
+
+            if(count($units) > 1) {
+                return response()->json(['success' => 0, 'errMsg'=> 'Software Registration Key duplicate!']);
+            }
+
+            if(count($units) == 0) {
+                return response()->json(['success' => 0, 'errMsg'=> 'Software Registration Key invalid!']);
+            }
+
+            $unit = $units[0];
+
+            if($unit->active_licenses_count >= 2) {
+                return response()->json(['success' => 0, 'errMsg'=> 'Software Registration Key reached max count (2)']);
+            }
+
+            $unit->active_licenses_count = $unit->active_licenses_count + 1;
+
+            $unit->save();
+
+            return response()->json(['success' => 1]);
         }
         catch (\Exception $e) {
             return response()->json(['success' => 0, 'errMsg'=> $e->getMessage()]);

@@ -9,6 +9,8 @@ const initState = {
   editUnitModalActive: false,
   editNoteModalActive: false,
   relocateUserAccountModalActive: false,
+  messageAllUserModalActive: false,
+  messageAllUser: '',
   isBlocking: false,
 
   unit: {
@@ -23,7 +25,7 @@ const initState = {
     inputboard3: '',
     inputboard4: '',
     software_reg_key: '',
-    status: '',
+    status: 0,
     active_date: '',
     os: '',
     active_licenses_count: '',
@@ -85,6 +87,16 @@ export default function reducer(state = initState, { type, payload }) {
       return {
         ...state,
         relocateUserAccountModalActive: !state.relocateUserAccountModalActive,
+      };
+    case unitActions.TOGGLE_MESSAGE_ALL_USERS_MODAL:
+      return {
+        ...state,
+        messageAllUserModalActive: !state.messageAllUserModalActive,
+      };
+    case unitActions.UPDATE_MESSAGE_ALL_USERS:
+      return {
+        ...state,
+        messageAllUser: payload.data,
       };
     case unitActions.SET_FILTER_FIELD:
       return {

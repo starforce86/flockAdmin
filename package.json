@@ -2,7 +2,7 @@
   "name": "flockaudio",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:8097/",
+  "proxy": "http://localhost:8092/",
   "dependencies": {
     "antd": "^3.10.0",
     "antd-local-icon": "^0.1.3",
