@@ -34,7 +34,7 @@ class CreateUnitsTable extends Migration
             $table->string('location')->default('')->nullable();
             $table->string('email')->default('')->nullable();
             $table->string('phone')->default('')->nullable();
-            $table->string('warranty_type')->default('')->nullable();
+            $table->integer('warranty_type')->default(1);
             $table->string('warranty_claims')->default('')->nullable();
             $table->timestamp('warranty_active_date')->nullable();
             $table->string('customer_notes')->default('')->nullable();

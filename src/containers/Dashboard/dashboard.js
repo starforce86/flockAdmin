@@ -271,7 +271,7 @@ class Units extends Component {
     }
     let softwareRegKey = this.generateSoftwareRegKey();
     confirm({
-      title: "Decommission System",
+      title: "Reactive System",
       content:
         "You are about to Reactive System this system and add it into the database as a new or refurbished unit. This will remove the Red highlight and allow the system to be reassigned to a new user. Do you want to proceed?",
       onOk() {
@@ -309,6 +309,7 @@ class Units extends Component {
         }
         let unit = filteredUnits[0];
         unit['active_date'] = '';
+        unit['status'] = 0;
         unit['os'] = '';
         unit['active_licenses_count'] = 0;
         unit['firstname'] = '';
@@ -316,7 +317,7 @@ class Units extends Component {
         unit['location'] = '';
         unit['email'] = '';
         unit['phone'] = '';
-        unit['warranty_type'] = '';
+        unit['warranty_type'] = 1;
         unit['warranty_claims'] = '';
         unit['warranty_active_date'] = '';
         unit['software_reg_key'] = softwareRegKey;
@@ -398,7 +399,7 @@ class Units extends Component {
     srcUnit['location'] = '';
     srcUnit['email'] = '';
     srcUnit['phone'] = '';
-    srcUnit['warranty_type'] = '';
+    srcUnit['warranty_type'] = 1;
     srcUnit['warranty_claims'] = '';
     srcUnit['warranty_active_date'] = '';
     dispatch(toggleRelocateUserAccountModal());
@@ -892,9 +893,11 @@ class Units extends Component {
             isSelect={true}
             selectOptions={[
               {value: '', text: 'Select'},
-              {value: 'Standard', text: 'Standard'},
+              {value: '1', text: 'Standard'},
+              {value: '2', text: 'Premium'},
             ]}
             defaultSelectOption={''}
+            value={row.warranty_type == 1 ? 'Standard' : (row.warranty_type == 2 ? 'Premium' : '')}
             onChange={this.onCellChange.bind(this)}
           />;
         },
@@ -1093,9 +1096,9 @@ class Units extends Component {
                       }}
                       rowClassName={(record, index) => {
                         let className = '';
-                        if (this.state.selectedRow && record.id === this.state.selectedRow.id) className += ' activeRow';
-                        if (record.is_repairing === 1) className += ' repairingRow';
-                        else if (record.is_decommissioned === 1) className += ' decommissionedRow';
+                        if (this.state.selectedRow && record.id == this.state.selectedRow.id) className += ' activeRow';
+                        if (record.is_repairing === 1 || record.is_repairing === "1") className += ' repairingRow';
+                        else if (record.is_decommissioned === 1 || record.is_decommissioned === "1") className += ' decommissionedRow';
                         return className;
                       }}
                       pagination={{
@@ -1368,11 +1371,12 @@ class Units extends Component {
                               style={marginFormItem}
                             >
                               <Select
-                                defaultValue={unit.warranty_type ? unit.warranty_type : 'Standard Warranty'}
+                                value={unit.warranty_type == 1 ? 'Standard' : (unit.warranty_type == 2 ? 'Premium' : 'Select')}
                                 onChange={this.onSelectChange.bind(this, 'warranty_type')}
                                 style={{ ...margin, width: '100%', marginTop: '8px' }}
                               >
-                                <Option value="Standard Warranty">Standard Warranty</Option>
+                                <Option value="1">Standard</Option>
+                                <Option value="2">Premium</Option>
                               </Select>
                             </FormItem>
                             <FormItem
@@ -1426,7 +1430,7 @@ class Units extends Component {
                     <Modal
                       visible={messageAllUserModalActive}
                       title={'Message All Users'}
-                      okText={'Save'}
+                      okText={'Send'}
                       onCancel={this.handleMessageAllUsersModal.bind(this)}
                       onOk={this.handleMessageAllUsers.bind(this)}
                       width={1000}>

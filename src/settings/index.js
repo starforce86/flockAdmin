@@ -6,7 +6,7 @@ export default {
 };
 
 const siteConfig = {
-  siteName: 'FlockStudio Admin',
+  siteName: 'FlockAdmin',
   siteIcon: 'ion-flash',
   footerText: 'FlockAdmin ©2019',
 };

@@ -250,7 +250,7 @@ const unitActions = {
         location: '',
         email: '',
         phone: '',
-        warranty_type: '',
+        warranty_type: 1,
         warranty_claims: '',
         warranty_active_date: '',
         customer_notes: '',
