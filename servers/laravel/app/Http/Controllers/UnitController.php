@@ -247,8 +247,10 @@ class UnitController extends Controller
             if(count($units) == 0) {
                 return response()->json(['success' => 0, 'errMsg'=> 'Software Registration Key invalid!']);
             }
+            
+            $unit = $units[0];
 
-            return response()->json(['success' => 1]);
+            return response()->json(['success' => 1, 'active_licenses_count' => $unit->active_licenses_count]);
         }
         catch (\Exception $e) {
             return response()->json(['success' => 0, 'errMsg'=> $e->getMessage()]);
@@ -260,24 +262,25 @@ class UnitController extends Controller
             $key = $request->get('regKey');
 
             if(empty($key)) {
-                return response()->json(['success' => 0, 'errMsg'=> 'Software Registration Key is empty!']);
+                return response()->json(['success' => 0, 'retCode' => 201, 'errMsg'=> 'Software Registration Key is empty!']);
             }
 
             $units = Unit::where('software_reg_key', $key)
                 ->get();
 
             if(count($units) > 1) {
-                return response()->json(['success' => 0, 'errMsg'=> 'Software Registration Key duplicate!']);
+                return response()->json(['success' => 0, 'retCode' => 202, 'errMsg'=> 'Software Registration Key duplicate!']);
             }
-
+            
             if(count($units) == 0) {
-                return response()->json(['success' => 0, 'errMsg'=> 'Software Registration Key invalid!']);
+                return response()->json(['success' => 0, 'retCode' => 203, 'errMsg'=> 'Software Registration Key invalid!']);
             }
+            
 
             $unit = $units[0];
 
             if($unit->active_licenses_count >= 2) {
-                return response()->json(['success' => 0, 'errMsg'=> 'Software Registration Key reached max count (2)']);
+                return response()->json(['success' => 0, 'retCode' => 204, 'errMsg'=> 'Software Registration Key reached max count (2)']);
             }
 
             $unit->active_licenses_count = $unit->active_licenses_count + 1;
