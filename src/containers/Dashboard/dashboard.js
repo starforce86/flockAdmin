@@ -350,6 +350,8 @@ class Units extends Component {
         }
         let unit = filteredUnits[0];
         unit['software_reg_key'] = softwareRegKey;
+        console.log('handleRefreshUserLicense');
+        unit['active_licenses_count'] = 0;
         dispatch(addUnit(unit));
       },
       onCancel() {},
@@ -462,6 +464,10 @@ class Units extends Component {
         if(unit[columnsKey] !== value) {
           changed = true;
         }
+      }
+      if(columnsKey === 'software_reg_key') {
+        console.log('columnsKey === software_reg_key');
+        unit['active_licenses_count'] = 0;
       }
       if(changed) {
         unit[columnsKey] = value;
