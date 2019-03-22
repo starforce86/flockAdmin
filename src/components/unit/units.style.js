@@ -6,6 +6,9 @@ import Select, { SelectOption } from '../uielements/select';
 import { InputSearch } from '../uielements/input';
 
 const TableWrapper = styled(Table)`
+  .ant-table-tbody > tr {
+    height: 30px;
+  }
   .ant-table-bordered .ant-table-thead > tr > th,
   .ant-table-bordered .ant-table-tbody > tr > td {
     white-space: normal;

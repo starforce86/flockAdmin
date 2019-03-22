@@ -28,6 +28,7 @@ const initState = {
     status: 0,
     active_date: '',
     os: '',
+    licenses_limit: 2,
     active_licenses_count: '',
     firstname: '',
     lastname: '',

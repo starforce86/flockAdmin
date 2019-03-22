@@ -466,7 +466,6 @@ class Units extends Component {
         }
       }
       if(columnsKey === 'software_reg_key') {
-        console.log('columnsKey === software_reg_key');
         unit['active_licenses_count'] = 0;
       }
       if(changed) {
@@ -489,6 +488,11 @@ class Units extends Component {
     this.setState({
       selectedFirmwareFile: e.target.files[0],
       firmwareFileLoaded: 0,
+    });
+  }
+  handleSelectedFirmwareVersion = e => {
+    this.setState({
+      selectedFirmwareVersion: e.target.value
     });
   }
   handleSoftwareUpload = () => {
@@ -802,6 +806,55 @@ class Units extends Component {
         },
       },
       {
+        title: 'Limit of Licenses',
+        dataIndex: 'licenses_limit',
+        key: 'licenses_limit',
+        render: (text, row, index) => {
+          return <EditableCell
+            index={index}
+            id={row.id}
+            columnsKey={'licenses_limit'}
+            isSelect={true}
+            selectOptions={[
+              {value: '1', text: '1'},
+              {value: '2', text: '2'},
+              {value: '3', text: '3'},
+              {value: '4', text: '4'},
+              {value: '5', text: '5'},
+              {value: '6', text: '6'},
+              {value: '7', text: '7'},
+              {value: '8', text: '8'},
+              {value: '9', text: '9'},
+              {value: '10', text: '10'},
+              {value: '11', text: '11'},
+              {value: '12', text: '12'},
+              {value: '13', text: '13'},
+              {value: '14', text: '14'},
+              {value: '15', text: '15'},
+              {value: '16', text: '16'},
+              {value: '17', text: '17'},
+              {value: '18', text: '18'},
+              {value: '19', text: '19'},
+              {value: '20', text: '20'},
+              {value: '21', text: '21'},
+              {value: '22', text: '22'},
+              {value: '23', text: '23'},
+              {value: '24', text: '24'},
+              {value: '25', text: '25'},
+              {value: '26', text: '26'},
+              {value: '27', text: '27'},
+              {value: '28', text: '28'},
+              {value: '29', text: '29'},
+              {value: '30', text: '30'},
+              {value: '-1', text: 'Infinite'},
+            ]}
+            defaultSelectOption={'-1'}
+            value={row.licenses_limit === -1 || row.licenses_limit === '-1' ? 'Infinite' : (row.licenses_limit === 0 || row.licenses_limit === '0' ? '0' : row.licenses_limit)}
+            onChange={this.onCellChange.bind(this)}
+          />;
+        },
+      },
+      {
         title: '# of Licenses Active',
         dataIndex: 'active_licenses_count',
         key: 'active_licenses_count',
@@ -987,6 +1040,7 @@ class Units extends Component {
       columns[21],
       columns[22],
       columns[23],
+      columns[24],
     ];
 
     const { autoCompleteDataSource } = this.state;
@@ -1480,12 +1534,18 @@ class Units extends Component {
                       onOk={this.handleFirmwareUpload}
                     >
                       <span>New Firmware Version Number : </span>
-                      <InputNumber
+                      {/* <InputNumber
                         value={this.state.selectedFirmwareVersion}
                         min={0} max={1000} step={0.1}
                         onChange={(value) => {
                           this.setState({ selectedFirmwareVersion: value });
                         }}
+                        style={margin}
+                      /> */}
+                      <Input
+                        placeholder="1.0.0.b"
+                        value={this.state.selectedFirmwareVersion}
+                        onChange={this.handleSelectedFirmwareVersion.bind(this)}
                         style={margin}
                       />
                       <input type="file" onChange={this.handleSelectedFirmwareFile} ref={this.uploadFirmwareFileInput} style={{ width: '100%' }}></input>

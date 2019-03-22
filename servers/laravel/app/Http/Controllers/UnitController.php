@@ -138,6 +138,7 @@ class UnitController extends Controller
             $unit->status = $request->get('status');
             $unit->active_date = $request->get('active_date');
             $unit->os = $request->get('os');
+            $unit->licenses_limit = $request->get('licenses_limit');
             $unit->active_licenses_count = $request->get('active_licenses_count');
             $unit->firstname = $request->get('firstname');
             $unit->lastname = $request->get('lastname');
@@ -250,7 +251,7 @@ class UnitController extends Controller
             
             $unit = $units[0];
 
-            return response()->json(['success' => 1, 'active_licenses_count' => $unit->active_licenses_count]);
+            return response()->json(['success' => 1, 'active_licenses_count' => $unit->active_licenses_count, 'licenses_limit' => $unit->licenses_limit]);
         }
         catch (\Exception $e) {
             return response()->json(['success' => 0, 'errMsg'=> $e->getMessage()]);
@@ -279,8 +280,8 @@ class UnitController extends Controller
 
             $unit = $units[0];
 
-            if($unit->active_licenses_count >= 2) {
-                return response()->json(['success' => 0, 'retCode' => 204, 'errMsg'=> 'Software Registration Key reached max count (2)']);
+            if($unit->licenses_limit > -1 && $unit->active_licenses_count >= $unit->licenses_limit) {
+                return response()->json(['success' => 0, 'retCode' => 204, 'errMsg'=> "Software Registration Key reached max count ({$unit->licenses_limit})"]);
             }
 
             $unit->active_licenses_count = $unit->active_licenses_count + 1;
