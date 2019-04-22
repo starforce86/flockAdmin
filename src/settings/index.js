@@ -1,5 +1,5 @@
-const apiUrl = 'https://www.flockadmin.com/Api/';
-// const apiUrl = 'http://localhost:8092/Api/';
+// const apiUrl = 'https://www.flockadmin.com/Api/';
+const apiUrl = 'http://localhost:8092/Api/';
 
 export default {
   apiUrl: apiUrl,
